@@ -1,0 +1,31 @@
+{
+  "name": "trip-routing-service",
+  "version": "1.0.0",
+  "description": "Microservizio per l'associazione di percorsi GPS ai trip del TPL. Riceve coordinate da Redis, utilizza OSRM per il map matching, analizza il percorso effettuato, lo confronta con fermate note e seleziona il trip più probabile interrogando PostgreSQL.",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "gps",
+    "osrm",
+    "redis",
+    "postgresql",
+    "public-transport",
+    "trip-matching",
+    "map-matching",
+    "nodejs",
+    "non-commercial",
+    "open-data",
+    "real-time"
+  ],
+  "author": "PadoVia and its contributors",
+  "license": "CC-BY-NC-4.0",
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "dotenv": "^17.0.0",
+    "p-queue": "^8.1.0",
+    "pg": "^8.16.3",
+    "redis": "^5.5.6"
+  }
+}
