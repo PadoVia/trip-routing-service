@@ -1,6 +1,9 @@
 const { createClient } = require('redis');
 const { REDIS_URL, REDIS_PORT, OPERATOR_SLUG } = require('../env');
 const { redis: redisReader, connectRedis } = require('../config/redis');
+const { VehicleRegistry } = require('../vehicles/vehicle-registry');
+
+const vehicleRegistry = new VehicleRegistry();
 
 // Client separato solo per ascolto eventi
 const redisSubscriber = createClient({ url: REDIS_URL });
@@ -32,9 +35,9 @@ const startListening = async () => {
       queue.add(async () => {
         try {
           const value = JSON.parse(await redisReader.get(key));
-          console.log(`📦 [${vehicleId}] Valore attuale della chiave '${key}':`, value);
 
-          // processBus(vehicleId, value);
+          const vehicle = vehicleRegistry.getOrCreate(vehicleId, value);
+          await vehicle.process();
 
         } catch (err) {
           console.error(`⚠️ [${vehicleId}] Errore:`, err);
