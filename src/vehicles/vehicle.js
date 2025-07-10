@@ -1,3 +1,6 @@
+const nodeAnalyzer = require("../gps/node-analyzer");
+const matchCoordinates = require("../osrm/matcher");
+const getStopByNodes = require("../stops/stop-db");
 
 class Vehicle {
   constructor({ plate, position, timestamp, speed, door, bearing }) {
@@ -12,6 +15,9 @@ class Vehicle {
     this.routeMatched = null;
     this.tripCandidates = [];
     this.assignedTrip = null;
+    this.positionMatch = {};
+    this.positionMatchNodes = [];
+    this.traversedStops = [];
   }
 
   updateFromPayload({ position, timestamp, speed, door, bearing }) {
@@ -51,8 +57,21 @@ class Vehicle {
   getDoorStatus() { return this.door; }
   getBearing() { return this.bearing; }
 
-  process() {
-    throw new Error('Method "process" must be implemented in subclasses');
+  async process() {
+    if (!this.prevCoords || !this.prevTimestamp) {
+      throw('Insufficient data to process: previous coordinates or timestamp missing');
+    }
+
+    const coords = [this.prevCoords, this.coords];
+    const times = [this.prevTimestamp.getTime() / 1000, this.timestamp.getTime() / 1000];
+
+    const result = await matchCoordinates(coords, times);
+    this.positionMatch = result;
+
+    this.positionMatchNodes = nodeAnalyzer(this.positionMatch);
+    this.traversedStops = await getStopByNodes(this.positionMatchNodes);
+
+
   }
 }
 

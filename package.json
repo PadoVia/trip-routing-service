@@ -22,6 +22,7 @@
   "author": "PadoVia and its contributors",
   "license": "CC-BY-NC-4.0",
   "dependencies": {
+    "@project-osrm/osrm": "^6.0.0",
     "chalk": "^5.4.1",
     "dotenv": "^17.0.0",
     "p-queue": "^8.1.0",
