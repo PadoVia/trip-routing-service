@@ -1,7 +1,7 @@
 const { pg } = require("../config/postgres");
 
 async function getStopByNodes(nodes){
-    if (!Array.isArray(nodes)) {
+    if (!Array.isArray(nodes) || nodes.length < 2) {
         return []; // Ritorna un array vuoto se i nodi non sono validi
     }
 

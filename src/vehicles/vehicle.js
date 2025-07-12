@@ -59,7 +59,8 @@ class Vehicle {
 
   async process() {
     if (!this.prevCoords || !this.prevTimestamp) {
-      throw('Insufficient data to process: previous coordinates or timestamp missing');
+      //throw('Insufficient data to process: previous coordinates or timestamp missing');
+      return;
     }
 
     const coords = [this.prevCoords, this.coords];

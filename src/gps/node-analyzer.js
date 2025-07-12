@@ -5,8 +5,9 @@ function nodeAnalyzer(positionMatch) {
     typeof positionMatch !== 'object' ||
     Object.keys(positionMatch).length === 0
   ) {
-    throw('Invalid position match data');
-  }
+    //throw('Invalid position match data');
+    return []; // Ritorna un array vuoto se i dati non sono validi
+}
 
   // Accede in modo sicuro ai nodi nella struttura dati.
   // Se una delle proprietà è assente, restituisce un array vuoto.
