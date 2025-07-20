@@ -1,6 +1,5 @@
 const { createClient } = require('redis');
-const { REDIS_URL, REDIS_PORT, OPERATOR_SLUG } = require('../env');
-const { redis: redisReader, connectRedis } = require('../config/redis');
+const { REDIS_URL, OPERATOR_SLUG } = require('../env');
 const { VehicleRegistry } = require('../vehicles/vehicle-registry');
 
 const vehicleRegistry = new VehicleRegistry();
@@ -18,23 +17,18 @@ redisSubscriber.on('ready', () => {
 const startListening = async () => {
   try {
     await redisSubscriber.connect();
-    await connectRedis();
+    console.log('🔌 Redis Subscriber connesso');
 
-    console.log('🔌 Connessi a Redis (subscriber + reader)');
-
-    await redisSubscriber.sendCommand(['CONFIG', 'SET', 'notify-keyspace-events', 'KEA']);
-
-    const pattern = `__keyspace@${REDIS_PORT}__:operator:${OPERATOR_SLUG}:vehicles:status:*`;
+    const pattern = `operator:${OPERATOR_SLUG}:vehicles:status:*`;
 
     const queue = new (await import('p-queue')).default({ concurrency: 100 });
 
-    await redisSubscriber.pSubscribe(pattern, async (event, channel) => {
-      const key = channel.replace(`__keyspace@${REDIS_PORT}__:`, '');
-      const vehicleId = key.split(':').pop();
+    await redisSubscriber.pSubscribe(pattern, async (message, channel) => {
+      const vehicleId = channel.split(':').pop();
 
       queue.add(async () => {
         try {
-          const value = JSON.parse(await redisReader.get(key));
+          const value = JSON.parse(message);
 
           const vehicle = vehicleRegistry.getOrCreate(vehicleId, value);
           await vehicle.process();
@@ -45,7 +39,7 @@ const startListening = async () => {
       });
     });
 
-    console.log(`📡 In ascolto su pattern: ${pattern}`);
+    console.log(`📡 In ascolto su canale: ${pattern}`);
   } catch (err) {
     console.error('❌ Errore nella sottoscrizione Redis:', err);
   }
