@@ -1,5 +1,5 @@
 const { createClient } = require('redis');
-const { REDIS_URL } = require('../env');
+const { REDIS_URL, OPERATOR_SLUG } = require('../env');
 
 const redis = createClient({ url: REDIS_URL });
 
@@ -24,7 +24,39 @@ async function connectRedis() {
   return redis;
 }
 
+async function savePossibleTrip(vehicleId, tripObject) {
+  if (!redis.isOpen) {
+    await connectRedis();
+  }
+
+  const key = `operator:${OPERATOR_SLUG}:vehicles:possible_trips:${vehicleId}`;
+  try {
+    const trip = JSON.stringify(tripObject);
+    await redis.lPush(key, trip);
+    await redis.publish(key, trip);
+  } catch (err) {
+    console.error(`❌ Errore durante il salvataggio del trip su ${key}:`, err);
+  }
+}
+
+async function saveAllPossibleTrips(vehicleId, foundTrips) {
+  if (!redis.isOpen) {
+    await connectRedis();
+  }
+
+  const promises = foundTrips.map(trip => {
+    return savePossibleTrip(vehicleId, trip);
+  });
+
+  try {
+    await Promise.all(promises);
+  } catch (err) {
+    console.error(`❌ Errore durante il salvataggio dei trip per ${vehicleId}:`, err);
+  }
+}
+
 module.exports = {
   redis,
   connectRedis,
+  saveAllPossibleTrips
 };

@@ -1,6 +1,8 @@
 const nodeAnalyzer = require("../gps/node-analyzer");
 const matchCoordinates = require("../osrm/matcher");
 const getStopByNodes = require("../stops/stop-db");
+const getTripsByStops = require("../trips/trip-finder");
+const { saveAllPossibleTrips } = require("../config/redis");
 
 class Vehicle {
   constructor({ plate, position, timestamp, speed, door, bearing }) {
@@ -71,6 +73,10 @@ class Vehicle {
 
     this.positionMatchNodes = nodeAnalyzer(this.positionMatch);
     this.traversedStops = await getStopByNodes(this.positionMatchNodes);
+    const foundTrips = await getTripsByStops(this.traversedStops, this.timestamp);
+
+    this.tripCandidates.push(...foundTrips);
+    await saveAllPossibleTrips(this.vehicleId, foundTrips, this.operatorSlug);
 
 
   }
