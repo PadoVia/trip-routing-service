@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vehicle-trip-matcher
+    restart: unless-stopped
+    ipc: host
+    ulimits:
+      memlock:
+        soft: 137438953472
+        hard: 137438953472
+    volumes:
+      - /dev/shm:/dev/shm
+      - /tmp:/tmp
+      - /data-per-docker/osrm:/app/osm/
